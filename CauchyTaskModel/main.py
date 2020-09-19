@@ -1,5 +1,5 @@
-from CauchyTaskApproach.CauchyProblem import DependentVariable, CauchyProblem
-from CauchyTaskApproach.Solver import RungeKuttaSolver
+from CauchyTaskModel.CauchyProblem import DependentVariable, CauchyProblem
+from CauchyTaskModel.Solver import RungeKuttaSolver
 
 from Visual import show_dependents
 

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from math import isnan
 
-from CauchyTaskApproach.CauchyProblem import CauchyProblem
+from CauchyTaskModel.CauchyProblem import CauchyProblem
 from Utils import ProgressInformer
 
 
