@@ -4,8 +4,8 @@ from LinearAlgebraModel.Physics import Coulomb
 from LinearAlgebraModel.Visual import WaveFunctionVisualizer
 
 hamiltonian = Coulomb(1, 1, -1)
-grid = Grid([(-0.5, 0.5), (-0.5, 0.5)], [100, 100])
-sol = SchroedingerSolution(hamiltonian, grid)
+grid = Grid([(-0.5, 0.5)], [1000])
+sol = SchroedingerSolution(hamiltonian=hamiltonian, grid=grid)
 
 
 def plot(wf: WaveFunction, color_phase=False):
@@ -16,4 +16,5 @@ def plot(wf: WaveFunction, color_phase=False):
     plotter.plot(wf.operator_value(hamiltonian))
 
 
-plot(sol[-200], color_phase=True)
+sol.dump(
+    f'{type(hamiltonian).__name__}_{"_".join(f"({b[0]},{b[1]},{s})" for b, s in zip(grid.bounds, grid.sizes))}.csv')
