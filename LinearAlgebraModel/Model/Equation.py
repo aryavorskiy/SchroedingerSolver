@@ -44,15 +44,25 @@ class SchroedingerSolution:
     def __init__(self, **kwargs):
         if 'hamiltonian' in kwargs and 'grid' in kwargs:
             ham, grid = kwargs['hamiltonian'], kwargs['grid']
+
+            print('Generating hamiltonian matrix...')
             mat = np.array(ham.get_matrix(grid), dtype='complex')
+
+            print('Finding eigenvalues...')
             eig = np.linalg.eig(mat)
+
+            print('Evaluating wave functions...')
             self.values, self.solution_matrix = eig
             self.grid = grid
             self.states = [WaveFunction(self.grid, line) for line in self.solution_matrix.transpose()]
+            print('Done.')
         if 'filename' in kwargs:
             if not kwargs['filename'].endswith('.csv'):
                 raise ValueError('Cannot load solution from non-csv file')
+
+            print('Loading solution from file...')
             self.load(kwargs['filename'])
+            print('Done.')
 
     def dump(self, filename: str):
         """

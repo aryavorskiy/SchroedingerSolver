@@ -1,10 +1,16 @@
+#!/usr/bin/python
 from LinearAlgebraModel.Model.Equation import SchroedingerSolution, WaveFunction
 from LinearAlgebraModel.Model.Grid import Grid
-from LinearAlgebraModel.Physics import Coulomb
+from LinearAlgebraModel.Physics import MultipleParticleCoulomb1D
 from LinearAlgebraModel.Visual import WaveFunctionVisualizer
 
-hamiltonian = Coulomb(1, 1, -1)
-grid = Grid([(-0.5, 0.5), (-0.5, 0.5)], [400, 400])
+
+def square_grid(r, q):
+    return Grid([(-r * 1.01, r * 1.01), (-r, r)], [q, q])
+
+
+hamiltonian = MultipleParticleCoulomb1D(10, 1, -1, 1)
+grid = square_grid(0.5, 50)
 sol = SchroedingerSolution(hamiltonian=hamiltonian, grid=grid)
 
 

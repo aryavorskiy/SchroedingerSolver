@@ -1,8 +1,13 @@
+import colorsys
+
 import numpy as np
 from matplotlib import pyplot as pl
 
 from LinearAlgebraModel.Model.Equation import WaveFunction
-from Utils import color_by_hue
+
+
+def color_by_hue(hue):
+    return colorsys.hsv_to_rgb(hue, 1, 1)
 
 
 class WaveFunctionVisualizer:

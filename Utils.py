@@ -1,6 +1,5 @@
 import datetime
 import time
-import colorsys
 
 
 class ProgressInformer:
@@ -24,7 +23,3 @@ class ProgressInformer:
 
     def finish(self):
         print('\r{} [{}] 100% ETA: 0:00:00'.format(self.title, '#' * 20))
-
-
-def color_by_hue(hue):
-    return colorsys.hsv_to_rgb(hue, 1, 1)
