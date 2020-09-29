@@ -38,7 +38,7 @@ class WaveFunctionVisualizer:
             for pt in self.wf.grid:
                 data[pt] = self.wf.values[self.wf.grid.index(pt)] * np.conj(self.wf.values[self.wf.grid.index(pt)])
         else:
-            raise ValueError(f'Unknown data extraction argument {format}')
+            raise ValueError('Unknown data extraction argument {}'.format(format))
         return data
 
     def set_value_data(self, data_type: str):
@@ -91,4 +91,4 @@ class WaveFunctionVisualizer:
             else:
                 ax.plot_surface(*args, cmap='viridis')
         else:
-            raise ValueError(f'Cannot plot {self.wf.grid.dimensions()}-dimensional wave function')
+            raise ValueError('Cannot plot {}-dimensional wave function'.format(self.wf.grid.dimensions()))

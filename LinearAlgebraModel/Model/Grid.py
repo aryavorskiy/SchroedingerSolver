@@ -1,6 +1,6 @@
 def shift_point(point, dim, offset):
     if not 0 <= dim < len(point):
-        raise IndexError(f'Point has no dimension {dim}')
+        raise IndexError('Point has no dimension {}'.format(dim))
     return tuple(point[i] + offset if i == dim else point[i] for i in range(len(point)))
 
 
@@ -63,7 +63,7 @@ class Grid:
             if not 0 <= point[i] < self.sizes[i]:
                 raise ValueError('Point is out of bounds of the grid')
             if type(point[i]) != int:
-                raise TypeError(f'Point indices should be int, not {type(point[i])}')
+                raise TypeError('Point indices should be int, not {}'.format(type(point[i])))
             index += point[i] * size_prod
             size_prod *= self.sizes[i]
         return index
@@ -81,7 +81,7 @@ class Grid:
         :return: Grid point
         """
         if type(item) != int:
-            raise TypeError(f'Grid index should be int, not {type(item)}')
+            raise TypeError('Grid index should be int, not {}'.format(type(item)))
         if not 0 <= item < len(self):
             raise IndexError('Grid index out of range')
         point = []
