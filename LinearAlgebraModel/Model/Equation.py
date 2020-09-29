@@ -11,8 +11,8 @@ class WaveFunction:
         if len(grid) != len(values):
             raise ValueError('Value count does not correspond to grid size')
         self.grid = grid
-        norm = sum(x * np.conj(x) for x in values)
-        self.values = np.array([x / norm for x in values])
+        self.values = np.array(values, dtype=np.complex)
+        self.values /= sum(x * np.conj(x) for x in self.values)
 
     def operator_value(self, operator: AbstractOperator):
         """
@@ -46,20 +46,17 @@ class SchroedingerSolution:
             ham, grid = kwargs['hamiltonian'], kwargs['grid']
 
             print('Generating hamiltonian matrix...')
-            mat = np.array(ham.get_matrix(grid), dtype='complex')
+            mat = np.array(ham.get_matrix(grid), dtype=np.complex)
 
             print('Finding eigenvalues...')
             eig = np.linalg.eig(mat)
 
             print('Evaluating wave functions...')
-            self.values, self.solution_matrix = eig
+            self.values = np.real_if_close(eig[0], tol=1E7)
             self.grid = grid
-            self.states = [WaveFunction(self.grid, line) for line in self.solution_matrix.transpose()]
+            self.states = [WaveFunction(self.grid, line) for line in eig[1].transpose()]
             print('Done.')
         if 'filename' in kwargs:
-            if not kwargs['filename'].endswith('.csv'):
-                raise ValueError('Cannot load solution from non-csv file')
-
             print('Loading solution from file...')
             self.load(kwargs['filename'])
             print('Done.')
@@ -77,34 +74,41 @@ class SchroedingerSolution:
         writer.writerow([b[1] for b in self.grid.bounds])
         writer.writerow(self.grid.sizes)
         writer.writerow(self.values)
-        for line in self.solution_matrix:
-            writer.writerow(line)
+        for wf in self.states:
+            writer.writerow(wf.values)
 
-    def load(self, filename):
+    def load(self, filename: str):
         """
         Loads solution from provided CSV file
 
         :param filename: File to load solution from
         """
+        if not filename.endswith('.csv'):
+            raise ValueError('Solution file must have CSV extension')
         solution_data = list(csv.reader(open(filename)))
         l_bounds = [float(a) for a in solution_data[0]]
         u_bounds = [float(a) for a in solution_data[1]]
         sizes = [int(a) for a in solution_data[2]]
         values = [complex(a) for a in solution_data[3]]
         self.grid = Grid(list(zip(l_bounds, u_bounds)), sizes)
-        self.values = values
+        self.values = np.array(values)
         solution_data = solution_data[4:]
-        self.solution_matrix = np.array(solution_data, dtype='complex')
-        self.states = [WaveFunction(self.grid, line) for line in self.solution_matrix.transpose()]
+        self.states = [WaveFunction(self.grid, line) for line in solution_data]
 
-    def __getitem__(self, energy):
+    def __getitem__(self, args):
         """
-        Obtain state with energy nearest to given
+        Obtain states with energy nearest to given
 
-        :return: State
+        :return: States tuple
         """
-        nearest_idx = min(list(range(len(self.values))), key=lambda i: abs(energy - self.values[i]))
-        return self.states[nearest_idx]
+        if type(args) == tuple:
+            energy, tolerance = args
+        else:
+            energy = args
+            tolerance = 1
+
+        nearest_nrg = min(list(self.values), key=lambda current_energy: abs(energy - current_energy))
+        return tuple(self.states[i] for i in range(len(self.values)) if abs(self.values[i] - nearest_nrg) < tolerance)
 
     def __iter__(self):
         """

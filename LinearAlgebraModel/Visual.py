@@ -29,10 +29,10 @@ class WaveFunctionVisualizer:
         """
         data = np.array(self.wf.grid.mesh())
         if format == 'value' or format == 'val':
-            for pt in self.wf.grid.all_points():
+            for pt in self.wf.grid:
                 data[pt] = self.wf.values[self.wf.grid.index(pt)]
         elif format == 'phase' or format == 'phs':
-            for pt in self.wf.grid.all_points():
+            for pt in self.wf.grid:
                 data[pt] = np.angle(self.wf.values[self.wf.grid.index(pt)]) / (2 * np.pi)
         elif format == 'prob' or format == 'pr':
             for pt in self.wf.grid:
@@ -59,10 +59,10 @@ class WaveFunctionVisualizer:
         """
         data = self.__extract_data(data_type)
         self.col_data = np.array(self.wf.grid.mesh([0, 0, 0]))
-        for pt in self.wf.grid.all_points():
+        for pt in self.wf.grid:
             self.col_data[pt] = color_by_hue(data[pt])
 
-    def plot(self, title=''):
+    def plot(self, title='', xlabel='', ylabel=''):
         """
         Plot selected data
 
@@ -77,12 +77,15 @@ class WaveFunctionVisualizer:
         args = *self.coord_mats, self.val_data
         if self.wf.grid.dimensions() == 1:
             ax = pl.axes()
+            ax.set_xlabel(xlabel)
             if self.col_data is not None:
                 ax.scatter(*args, c=self.col_data)
             else:
                 ax.plot(*args)
         elif self.wf.grid.dimensions() == 2:
             ax = pl.axes(projection='3d')
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
             if self.col_data is not None:
                 ax.plot_surface(*args, facecolors=self.col_data)
             else:

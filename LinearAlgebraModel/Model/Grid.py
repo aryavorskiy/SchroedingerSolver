@@ -37,19 +37,6 @@ class Grid:
         if self.sizes[dimension] != 1:
             return (self.bounds[dimension][1] - self.bounds[dimension][0]) / (self.sizes[dimension] - 1)
 
-    def grid_range(self, dimension):
-        """
-        Obtain grid step on specified axis
-
-        :param dimension: Index of the axis specified
-        :return: Step
-        """
-        if self.sizes[dimension] != 1:
-            return [self.bounds[dimension][0] + self.grid_step(dimension) * i for i in
-                    range(1, self.sizes[dimension] - 1)]
-        else:
-            return None
-
     def mesh(self, initial_obj=None):
         """
         Return empty multi-dimensional array with parameters corresponding to grid constraints
@@ -118,14 +105,6 @@ class Grid:
         return True
 
     def __iter__(self):
-        """
-        Returns an iterator of points inside the grid
-        """
-        for i in range(len(self)):
-            if self[i] in self:
-                yield self[i]
-
-    def all_points(self):
         """
         Returns an iterator of all points of the grid
         """

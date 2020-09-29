@@ -60,4 +60,4 @@ class MultipleParticleCoulomb1D(ParticleHamiltonian):
     def get_potential(self, x: list) -> float:
         if len(x) != 2:
             raise ValueError('Should contain exactly 2 particles')
-        return self.Q * self.q1 / x[0] + self.Q * self.q2 / x[1] + self.q1 * self.q2 / abs(x[0] - x[1])
+        return self.Q * self.q1 / abs(x[0]) + self.Q * self.q2 / abs(x[1]) + self.q1 * self.q2 / abs(x[0] - x[1])
