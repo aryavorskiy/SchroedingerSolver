@@ -32,5 +32,6 @@ alias = '{}_{}'.format(
 )
 
 spectre = sol.spectre(TorqueOperator(sol.grid))
-writer = csv.writer(open(alias + '_spectre'))
-writer.writerow(spectre)
+with open(alias + '_spectre', 'w') as spectre_writer:
+    writer = csv.writer(spectre_writer)
+    writer.writerow(spectre)
