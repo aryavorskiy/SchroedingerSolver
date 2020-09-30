@@ -22,7 +22,7 @@ class WaveFunction:
         if len(grid) != len(values):
             raise ValueError('Value count does not correspond to grid size')
         self.grid = grid
-        self.values = np.array((complex(a) for a in values), dtype=np.complex)
+        self.values = np.array(list(complex(a) for a in values), dtype=np.complex)
         self.values /= sum(x * np.conj(x) for x in self.values)
 
     def operator_value(self, operator: LinearOperator):
@@ -127,8 +127,7 @@ class SchrodingerSolution:
         progressbar = ProgressInformer('Evaluating spectre', length=40)
         for i in range(len(self.states)):
             wf = self.states[i]
-            if wf.operator_error(operator) < 0.001:
-                spectre.append(wf.operator_value(operator))
+            spectre.append(wf.operator_value(operator))
             progressbar.report_progress((i + 1) / len(self.states))
         progressbar.finish()
         return sorted(spectre)
