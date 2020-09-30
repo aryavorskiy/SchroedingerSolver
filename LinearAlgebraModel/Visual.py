@@ -10,6 +10,14 @@ def color_by_hue(hue):
     return colorsys.hsv_to_rgb(hue, 1, 1)
 
 
+def plot_any(data, title=''):
+    pl.cla()
+    pl.grid()
+    pl.title(title)
+    ax = pl.axes()
+    ax.plot(list(range(len(data))), data)
+
+
 class WaveFunctionVisualizer:
     def __init__(self, wf: WaveFunction):
         self.wf = wf

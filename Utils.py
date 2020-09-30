@@ -3,23 +3,46 @@ import time
 
 
 class ProgressInformer:
-    def __init__(self, title):
-        self.progress_pct = 0
+    """
+    Object that enables showing the progress of some operation in the console.
+    """
+
+    def __init__(self, caption='', length=20):
+        """
+        Creates a new ProgressInformer instance.
+
+        :param caption: Text to the left of the progressbar
+        :param length: Length of the progressbar in characters
+        """
+        self.progress = 0
         self.start_time = int(time.time())
         self.time_elapsed = 0
-        self.title = title
+        self.length = length
+        self.caption = caption
 
-    def report_progress(self, progress):
-        current_pct = int(100 * progress)
+    def report_progress(self, progress: float):
+        """
+        Updates progress data stored in the object.
+        The progressbar is updated 5 times a second.
+        """
         current_elapsed = int(time.time()) - self.start_time
-        if current_pct != self.progress_pct or current_elapsed != self.time_elapsed:
-            print('\r{} [{:-<20}] {}% ETA: {}'.format(
-                self.title, '#' * int(current_pct / 5),
+        if current_elapsed - self.time_elapsed > 0.2:
+            current_pct = int(100 * progress)
+            bar_count = int(current_pct * self.length / 100)
+            d_seconds = current_elapsed - self.time_elapsed
+            d_progress = progress - self.progress
+            estimated_left = (1 - progress) * d_seconds / d_progress
+            print('\r{} [{}] {}% ETA: {}'.format(
+                self.caption,
+                '#' * bar_count + '-' * (self.length - bar_count),
                 current_pct,
-                str(datetime.timedelta(seconds=int(self.time_elapsed * (1 / progress - 1))))),
+                str(datetime.timedelta(seconds=int(estimated_left)))),
                 end='')
             self.time_elapsed = current_elapsed
-            self.progress_pct = current_pct
+            self.progress = progress
 
     def finish(self):
-        print('\r{} [{}] 100% ETA: 0:00:00'.format(self.title, '#' * 20))
+        """
+        Prints a full progress bar and goes to next line
+        """
+        print('\r{} [{}] 100% ETA: 0:00:00'.format(self.caption, '#' * self.length))

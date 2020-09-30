@@ -18,10 +18,10 @@ class Grid:
             raise ValueError('Grid dimension could not be acquired')
         for size in sizes:
             if not size >= 1:
-                raise ValueError('Grid size should be at least 1 for every axis')
+                raise ValueError('Grid size must be at least 1 for every axis')
         for bound in bounds:
             if len(bound) != 2:
-                raise ValueError('Invalid bound parameter detected, should have length=2')
+                raise ValueError('Invalid bound parameter detected, must have length 2')
             if bound[0] >= bound[1]:
                 raise ValueError('Invalid bound parameter detected, be ascending')
         self.bounds = bounds
@@ -63,7 +63,7 @@ class Grid:
             if not 0 <= point[i] < self.sizes[i]:
                 raise ValueError('Point is out of bounds of the grid')
             if type(point[i]) != int:
-                raise TypeError('Point indices should be int, not {}'.format(type(point[i])))
+                raise TypeError('Point indices must be int, not {}'.format(type(point[i])))
             index += point[i] * size_prod
             size_prod *= self.sizes[i]
         return index
@@ -81,7 +81,7 @@ class Grid:
         :return: Grid point
         """
         if type(item) != int:
-            raise TypeError('Grid index should be int, not {}'.format(type(item)))
+            raise TypeError('Grid index must be int, not {}'.format(type(item)))
         if not 0 <= item < len(self):
             raise IndexError('Grid index out of range')
         point = []

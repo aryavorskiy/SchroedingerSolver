@@ -1,6 +1,8 @@
 #!/usr/bin/python
-from LinearAlgebraModel.Model.Equation import SchroedingerSolution, WaveFunction
-from LinearAlgebraModel.Model.Grid import Grid
+import csv
+
+from LinearAlgebraModel.Model.Equation import SchrodingerSolution, WaveFunction
+from LinearAlgebraModel.Operators import TorqueOperator
 from LinearAlgebraModel.Physics import *
 from LinearAlgebraModel.Visual import WaveFunctionVisualizer
 
@@ -9,12 +11,14 @@ def square_grid(r, q, dim=1):
     return Grid([(-r, r)] * dim, [q] * dim)
 
 
-hamiltonian = Coulomb(1, 10, -1)
-grid = square_grid(5, 40, dim=3)
-sol = SchroedingerSolution(hamiltonian=hamiltonian, grid=grid)
+# grid = square_grid(5, 40, dim=3)
+# hamiltonian = Coulomb(grid, 1, 10, -1)
+# sol = SchrodingerSolution(hamiltonian=hamiltonian, grid=grid)
+sol = SchrodingerSolution(filename='Coulomb_(-5,5,20)_(-5,5,20)_(-5,5,20).csv')
+hamiltonian = Coulomb(sol.grid, 1, 10, -1)
 
 
-def plot(wf: WaveFunction, data_format='pr', color_phase=False):
+def plot_solution(wf: WaveFunction, data_format='pr', color_phase=False):
     plotter = WaveFunctionVisualizer(wf)
     plotter.set_value_data(data_format)
     if color_phase:
@@ -22,7 +26,11 @@ def plot(wf: WaveFunction, data_format='pr', color_phase=False):
     plotter.plot(title=str(wf.operator_value(hamiltonian)), xlabel='X')
 
 
-sol.dump('{}_{}.csv'.format(
+alias = '{}_{}'.format(
     type(hamiltonian).__name__,
-    '_'.join('({},{},{})'.format(*b, s) for b, s in zip(grid.bounds, grid.sizes))
-))
+    '_'.join('({},{},{})'.format(*b, s) for b, s in zip(sol.grid.bounds, sol.grid.sizes))
+)
+
+spectre = sol.spectre(TorqueOperator(sol.grid))
+writer = csv.writer(open(alias + '_spectre'))
+writer.writerow(spectre)
