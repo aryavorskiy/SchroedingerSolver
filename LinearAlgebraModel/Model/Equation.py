@@ -22,7 +22,7 @@ class WaveFunction:
         if len(grid) != len(values):
             raise ValueError('Value count does not correspond to grid size')
         self.grid = grid
-        self.values = np.array(values, dtype=np.complex)
+        self.values = np.array((complex(a) for a in values), dtype=np.complex)
         self.values /= sum(x * np.conj(x) for x in self.values)
 
     def operator_value(self, operator: LinearOperator):
