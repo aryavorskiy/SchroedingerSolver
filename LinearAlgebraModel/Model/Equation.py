@@ -25,26 +25,18 @@ class WaveFunction:
         self.values = np.array(list(complex(a) for a in values), dtype=np.complex)
         self.values /= sum(x * np.conj(x) for x in self.values)
 
-    def operator_value(self, operator: LinearOperator):
+    def operator_value_error(self, operator: LinearOperator):
         """
-        Calculate the mean operator value for this wave function
+        Calculate the mean operator value and error for this wave function
 
         :param operator: Operator object
-        :return: Value
+        :return: Operator value and error
         """
-        return np.linalg.multi_dot(
+        val = np.linalg.multi_dot(
             (self.values.transpose(), operator.get_matrix(), self.values))
-
-    def operator_error(self, operator: LinearOperator):
-        """
-        Calculates the operator value for this wave function.
-
-        :param operator: Operator object
-        :return: Mean square error
-        """
-        val = self.operator_value(operator)
         op = val * np.eye(len(self.grid)) - operator.get_matrix()
-        return np.linalg.multi_dot((self.values.transpose(), op, op, self.values))
+        return val, np.linalg.multi_dot((self.values.transpose(), op, op, self.values))
+
 
 
 class SchrodingerSolution:
@@ -128,14 +120,24 @@ class SchrodingerSolution:
         progressbar.finish()
 
     def spectre(self, operator: LinearOperator):
+        """
+        Obtains operator value spectre.
+
+        :param operator: Operator object
+        :return: Sorted list of values and accordingly sorted list of errors
+        """
         spectre = []
+        errors = []
         progressbar = ProgressInformer('Evaluating spectre', length=40)
         for i in range(len(self.states)):
+            value, error = wf.operator_value_error(operator)
             wf = self.states[i]
-            spectre.append(wf.operator_value(operator))
+            spectre.append(value)
+            errors.append(error)
             progressbar.report_progress((i + 1) / len(self.states))
         progressbar.finish()
-        return sorted(spectre)
+        pairs = sorted(list(zip(spectre, errors)))
+        return [pair[0] for pair in pairs], [pair[1] for pair in pairs]
 
     def __getitem__(self, args):
         """

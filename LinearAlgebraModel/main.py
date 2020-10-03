@@ -2,8 +2,8 @@
 import csv
 
 from LinearAlgebraModel.Model.Equation import SchrodingerSolution, WaveFunction
-from LinearAlgebraModel.Operators import TorqueOperator
-from LinearAlgebraModel.Physics import *
+from LinearAlgebraModel.Operators.Hamiltonian import *
+from LinearAlgebraModel.Operators.Measurement import TorqueOperator
 from LinearAlgebraModel.Visual import WaveFunctionVisualizer
 
 
@@ -24,10 +24,10 @@ def plot_solution(wf: WaveFunction, data_format='pr', color_phase=False):
     plotter.set_value_data(data_format)
     if color_phase:
         plotter.set_color_data('phs')
-    plotter.plot(title=str(wf.operator_value(hamiltonian)), x_label='X')
+    plotter.plot(title=str(wf.operator_value_error(hamiltonian)[0]), x_label='X')
 
 
 spectre = sol.spectre(TorqueOperator(sol.grid))
 with open(str(sol) + '_spectre', 'w') as spectre_writer:
     writer = csv.writer(spectre_writer)
-    writer.writerow(spectre)
+    writer.writerows(spectre)
