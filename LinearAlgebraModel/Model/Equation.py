@@ -130,8 +130,8 @@ class SchrodingerSolution:
         errors = []
         progressbar = ProgressInformer('Evaluating spectre', length=40)
         for i in range(len(self.states)):
-            value, error = wf.operator_value_error(operator)
             wf = self.states[i]
+            value, error = wf.operator_value_error(operator)
             spectre.append(value)
             errors.append(error)
             progressbar.report_progress((i + 1) / len(self.states))
