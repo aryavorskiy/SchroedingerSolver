@@ -8,7 +8,8 @@ from LinearAlgebraModel.Visual import WaveFunctionVisualizer
 
 
 def square_grid(r, q, dim=1):
-    return Grid([(-r, r)] * dim, [q] * dim)
+    step = 1 / (dim * 100)
+    return Grid([(-r - step * d, r + step * d) for d in range(dim)], [q] * dim)
 
 
 # grid = square_grid(5, 40, dim=3)
@@ -23,15 +24,10 @@ def plot_solution(wf: WaveFunction, data_format='pr', color_phase=False):
     plotter.set_value_data(data_format)
     if color_phase:
         plotter.set_color_data('phs')
-    plotter.plot(title=str(wf.operator_value(hamiltonian)), xlabel='X')
+    plotter.plot(title=str(wf.operator_value(hamiltonian)), x_label='X')
 
-
-alias = '{}_{}'.format(
-    type(hamiltonian).__name__,
-    '_'.join('({},{},{})'.format(*b, s) for b, s in zip(sol.grid.bounds, sol.grid.sizes))
-)
 
 spectre = sol.spectre(TorqueOperator(sol.grid))
-with open(alias + '_spectre', 'w') as spectre_writer:
+with open(str(sol) + '_spectre', 'w') as spectre_writer:
     writer = csv.writer(spectre_writer)
     writer.writerow(spectre)

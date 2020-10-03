@@ -73,6 +73,10 @@ class SchrodingerSolution:
             self.values = np.real_if_close(eig[0], tol=1E7)
             self.grid = grid
             self.states = [WaveFunction(self.grid, line) for line in eig[1].transpose()]
+            self.alias = '{}_{}'.format(
+                type(ham).__name__,
+                '_'.join('({},{},{})'.format(*b, s) for b, s in zip(grid.bounds, grid.sizes))
+            )
             print('Schrodinger equation initialization done\n')
         elif 'filename' in kwargs:
             print('Loading solution from file...')
@@ -108,6 +112,7 @@ class SchrodingerSolution:
         """
         if not filename.endswith('.csv'):
             raise ValueError('Solution file must have CSV extension')
+        self.alias = filename[:-4]
         reader = csv.reader(open(filename))
         l_bounds = [float(a) for a in reader.__next__()]
         u_bounds = [float(a) for a in reader.__next__()]
@@ -157,3 +162,9 @@ class SchrodingerSolution:
         Returns an iterator with all solutions of the initial equation.
         """
         return iter(self.states)
+
+    def __str__(self):
+        """
+        Generates an unique alias for the solution
+        """
+        return self.alias
