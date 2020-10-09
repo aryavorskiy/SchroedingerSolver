@@ -33,10 +33,10 @@ class WaveFunction:
         :return: Operator value and error
         """
         val = np.linalg.multi_dot(
-            (self.values.transpose(), operator.get_matrix(), self.values))
-        op = val * np.eye(len(self.grid)) - operator.get_matrix()
-        return val, np.linalg.multi_dot((self.values.transpose(), op, op, self.values))
-
+            (self.values.transpose(), operator.mat, self.values))
+        op = val * np.eye(len(self.grid)) - operator.mat
+        column = np.conj(self.values) * np.dot(op, self.values)
+        return val, np.dot(column.transpose(), column)
 
 
 class SchrodingerSolution:
@@ -59,7 +59,7 @@ class SchrodingerSolution:
             ham, grid = kwargs['hamiltonian'], kwargs['grid']
 
             print('Finding eigenvalues...')
-            eig = np.linalg.eig(ham.get_matrix())
+            eig = np.linalg.eig(ham.mat)
 
             print('Evaluating wave functions...')
             self.values = np.real_if_close(eig[0], tol=1E7)
@@ -136,8 +136,7 @@ class SchrodingerSolution:
             errors.append(error)
             progressbar.report_progress((i + 1) / len(self.states))
         progressbar.finish()
-        pairs = sorted(list(zip(spectre, errors)))
-        return [pair[0] for pair in pairs], [pair[1] for pair in pairs]
+        return spectre, errors
 
     def __getitem__(self, args):
         """
@@ -157,7 +156,7 @@ class SchrodingerSolution:
             tolerance = 0
 
         nearest_nrg = min(list(self.values), key=lambda current_energy: abs(energy - current_energy))
-        return tuple(self.states[i] for i in range(len(self.values)) if abs(self.values[i] - nearest_nrg) < tolerance)
+        return tuple(self.states[i] for i in range(len(self.values)) if abs(self.values[i] - nearest_nrg) <= tolerance)
 
     def __iter__(self):
         """

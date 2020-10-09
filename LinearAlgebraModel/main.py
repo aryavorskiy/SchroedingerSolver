@@ -3,7 +3,7 @@ import csv
 
 from LinearAlgebraModel.Model.Equation import SchrodingerSolution, WaveFunction
 from LinearAlgebraModel.Operators.Hamiltonian import *
-from LinearAlgebraModel.Operators.Measurement import TorqueOperator
+from LinearAlgebraModel.Operators.Measurement import AngularLaplaceOperator
 from LinearAlgebraModel.Visual import WaveFunctionVisualizer
 
 
@@ -27,7 +27,7 @@ def plot_solution(wf: WaveFunction, data_format='pr', color_phase=False):
     plotter.plot(title=str(wf.operator_value_error(hamiltonian)[0]), x_label='X')
 
 
-spectre = sol.spectre(TorqueOperator(sol.grid))
+spectre = sol.spectre(AngularLaplaceOperator(sol.grid))
 with open(str(sol) + '_spectre', 'w') as spectre_writer:
     writer = csv.writer(spectre_writer)
     writer.writerows(spectre)

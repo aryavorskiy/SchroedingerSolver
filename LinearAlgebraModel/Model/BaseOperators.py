@@ -104,12 +104,6 @@ class LinearOperator:
         self.mat = mat
         pass
 
-    def get_matrix(self) -> np.array:
-        """
-        Returns a matrix for given operator in given grid.
-        """
-        return self.mat
-
     def __assert_compatibility(self, other):
         if type(self) != type(other):
             raise TypeError('Unsupported operand types: {} and {}'.format(type(self), type(other)))
@@ -133,15 +127,13 @@ class LinearOperator:
         self.mat -= other.mat
 
     def __mul__(self, other):
-        if type(other) not in {int, float, complex}:
-            LinearOperator(self.grid, np.dot(self.mat, other))
+        if type(other) in {int, float, complex}:
+            return LinearOperator(self.grid, np.dot(self.mat, other))
         self.__assert_compatibility(other)
         return LinearOperator(self.grid, np.dot(self.mat, other.mat))
 
     def __imul__(self, other):
-        if type(other) not in {int, float, complex}:
-            self.__assert_compatibility(other)
-        self.mat = np.dot(self.mat, other.mat)
+        self.mat = (other * self).mat
 
 
 class ParticleHamiltonian(LinearOperator):
@@ -156,9 +148,6 @@ class ParticleHamiltonian(LinearOperator):
             i = grid.index(pt)
             operator_mat[i, i] += self.get_potential(grid.point_to_absolute(pt))
         super(ParticleHamiltonian, self).__init__(grid, operator_mat)
-
-    def get_matrix(self) -> np.array:
-        return self.mat
 
     @abstractmethod
     def get_potential(self, x: list) -> float:
