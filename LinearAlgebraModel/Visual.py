@@ -4,6 +4,7 @@ import numpy as np
 from matplotlib import pyplot as pl
 
 from LinearAlgebraModel.Model.Equation import WaveFunction
+from LinearAlgebraModel.Model.Spectrum import Spectrum
 
 
 def color_by_hue(hue):
@@ -14,9 +15,11 @@ def plot_any(data, title=''):
     """
     Presents any array of data on a scatter plot
 
-    :param data: List with values to plot
+    :param data: Iterable with values to plot or Spectrum object
     :param title: Plot title
     """
+    if type(data) == Spectrum:
+        data = sorted(abs((a * a.conjugate()).real) ** 0.5 for a in data.values)
     pl.cla()
     pl.grid()
     pl.xticks([])

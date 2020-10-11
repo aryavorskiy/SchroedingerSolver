@@ -4,6 +4,7 @@ import numpy as np
 
 from LinearAlgebraModel.Model.BaseOperators import LinearOperator
 from LinearAlgebraModel.Model.Grid import Grid
+from LinearAlgebraModel.Model.Spectrum import Spectrum
 from Utils import ProgressInformer
 
 
@@ -119,24 +120,24 @@ class SchrodingerSolution:
             progressbar.report_progress((i + 1) / len(self.values))
         progressbar.finish()
 
-    def spectre(self, operator: LinearOperator):
+    def spectrum(self, operator: LinearOperator):
         """
-        Obtains operator value spectre.
+        Obtains operator value spectrum.
 
         :param operator: Operator object
         :return: Sorted list of values and accordingly sorted list of errors
         """
-        spectre = []
+        spectrum = []
         errors = []
-        progressbar = ProgressInformer('Evaluating spectre', length=40)
+        progressbar = ProgressInformer('Evaluating spectrum', length=40)
         for i in range(len(self.states)):
             wf = self.states[i]
             value, error = wf.operator_value_error(operator)
-            spectre.append(value)
+            spectrum.append(value)
             errors.append(error)
             progressbar.report_progress((i + 1) / len(self.states))
         progressbar.finish()
-        return spectre, errors
+        return Spectrum(values=spectrum, errors=errors)
 
     def __getitem__(self, args):
         """
