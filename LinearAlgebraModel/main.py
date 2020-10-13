@@ -2,8 +2,9 @@
 import csv
 
 from LinearAlgebraModel.Model.Equation import SchrodingerSolution, WaveFunction
+from LinearAlgebraModel.Model.Spectrum import Spectrum
 from LinearAlgebraModel.Operators.Hamiltonian import *
-from LinearAlgebraModel.Operators.Measurement import AngularLaplaceOperator
+from LinearAlgebraModel.Operators.Measurement import AngularLaplaceOperator, TorqueOperator
 from LinearAlgebraModel.Visual import WaveFunctionVisualizer
 
 
@@ -35,5 +36,5 @@ if __name__ == '__main__':
         plotter.plot(title=str(wf.operator_value_error(hamiltonian)[0]), x_label='X')
 
 
-    spectrum = sol.spectrum(AngularLaplaceOperator(sol.grid))
+    spectrum = Spectrum(solution=sol, operators=(AngularLaplaceOperator(sol.grid), TorqueOperator(sol.grid)))
     spectrum.dump(sol.alias + '_spectrum')
