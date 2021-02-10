@@ -31,7 +31,7 @@ class Coulomb(ParticleHamiltonian):
         super(Coulomb, self).__init__(grid, m)
 
     def get_potential(self, x: list) -> float:
-        return K * self.q1 * self.q2 / sum(t ** 2 for t in x) ** 2
+        return K * self.q1 * self.q2 / sum(t ** 2 for t in x) ** 0.5
 
 
 class LennardJones(ParticleHamiltonian):

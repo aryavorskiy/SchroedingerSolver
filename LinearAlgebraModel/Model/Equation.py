@@ -23,7 +23,7 @@ class WaveFunction:
             raise ValueError('Value count does not correspond to grid size')
         self.grid = grid
         self.values = np.array(list(complex(a) for a in values), dtype=np.complex)
-        self.values /= sum(x * np.conj(x) for x in self.values)
+        self.values /= sum(x * np.conj(x) for x in self.values) ** 0.5
 
     def operator_value_error(self, operator: LinearOperator):
         """
@@ -33,10 +33,38 @@ class WaveFunction:
         :return: Operator value and error
         """
         val = np.linalg.multi_dot(
-            (self.values.transpose(), operator.mat, self.values))
+            (np.conj(self.values.transpose()), operator.mat, self.values))
         op = val * np.eye(len(self.grid)) - operator.mat
         column = np.conj(self.values) * np.dot(op, self.values)
-        return val, np.dot(column.transpose(), column)
+        return complex(val), abs(np.dot(column.transpose(), column))
+
+    def value_at(self, point):
+        return self.values[self.grid.index(point)]
+
+
+def naive_operator_value_error(wf: WaveFunction, op: LinearOperator):
+    """
+    Calculates eigenvalue of an operator on specified wave function.
+    Omits values near to bounds or center.
+
+    :param wf: WaveFunction object
+    :param op: LinearOperator object
+    :return: Operator value and error
+    """
+    op_values = np.dot(op.mat, wf.values)
+    r = min(min(abs(k) for k in bounds) for bounds in wf.grid.bounds)
+    avg_abs = 1 / len(wf.grid)
+    values = []
+    for pt in wf.grid.points_inside():
+        if sum(a ** 2 for a in wf.grid.point_to_absolute(pt)) ** 0.5 > r / 4:
+            wf_value = wf.value_at(pt)
+            if abs(wf_value) > avg_abs / 10:
+                values.append((op_values[wf.grid.index(pt)], wf_value))
+    if len(values) == 0:
+        return None, None
+    avg = sum(pair[0] / pair[1] for pair in values) / len(values)
+    err = (sum((abs((pair[0] / pair[1] - avg) * pair[1])) ** 2 for pair in values)) ** 0.5
+    return avg, err
 
 
 class SchrodingerSolution:
@@ -61,10 +89,16 @@ class SchrodingerSolution:
             print('Finding eigenvalues...')
             eig = np.linalg.eig(ham.mat)
 
-            print('Evaluating wave functions...')
             self.values = np.real_if_close(eig[0], tol=1E7)
             self.grid = grid
-            self.states = [WaveFunction(self.grid, line) for line in eig[1].transpose()]
+            progressbar = ProgressInformer('Evaluating wave functions', length=40)
+            i = 0
+            self.states = []
+            for line in eig[1].transpose():
+                self.states.append(WaveFunction(self.grid, line))
+                i += 1
+                progressbar.report_progress(i / len(eig[1]))
+            progressbar.finish()
             self.alias = '{}_{}'.format(
                 type(ham).__name__,
                 '_'.join('({},{},{})'.format(*b, s) for b, s in zip(grid.bounds, grid.sizes))

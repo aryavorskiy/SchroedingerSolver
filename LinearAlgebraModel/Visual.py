@@ -11,21 +11,49 @@ def color_by_hue(hue):
     return colorsys.hsv_to_rgb(hue, 1, 1)
 
 
-def plot_any(data, title=''):
-    """
-    Presents any array of data on a scatter plot
+def plot_polar(wf: WaveFunction, center=None):
+    if center is None:
+        center = [sum(b) / len(b) for b in wf.grid.bounds]
+    elif len(center) != len(wf.grid):
+        raise ValueError('Center coordinates must have same dimension number as grid')
+    k = []
+    v = []
+    for pt in wf.grid:
+        k.append(sum((pair[0] - pair[1]) ** 2 for pair in zip(wf.grid.point_to_absolute(pt), center)) ** 0.5)
+        v.append(abs(wf.values[wf.grid.index(pt)]) ** 2)
+    plot_any(v, k)
 
-    :param data: Iterable with values to plot or Spectrum object
-    :param title: Plot title
-    """
-    if type(data) == Spectrum:
-        data = sorted(abs((a * a.conjugate()).real) ** 0.5 for a in data.values)
+
+def plot_spectrum(spectrum: Spectrum, title=''):
     pl.cla()
     pl.grid()
     pl.xticks([])
     pl.title(title)
     ax = pl.axes()
-    ax.scatter(list(range(len(data))), data)
+    for alias in spectrum.operators():
+        values = [float(e[alias][0].real) for e in spectrum]
+        ax.scatter(list(range(len(values))), values, label=alias)
+    pl.legend()
+    pl.show()
+
+
+def plot_any(data, keys=None, title=''):
+    """
+    Presents any array of data on a scatter plot
+
+    :param data: Iterable with values to plot
+    :param keys: X values list. Generated from number range automatically if not given
+    :param title: Plot title
+    """
+    pl.cla()
+    pl.grid()
+    pl.title(title)
+    ax = pl.axes()
+    if keys is None:
+        keys = list(range(len(data)))
+        pl.xticks([])
+    ax.scatter(keys, data)
+    pl.show()
 
 
 class WaveFunctionVisualizer:
@@ -119,5 +147,6 @@ class WaveFunctionVisualizer:
                 ax.plot_surface(*args, facecolors=self.col_data)
             else:
                 ax.plot_surface(*args, cmap='viridis')
+            pl.show()
         else:
             raise ValueError('Cannot plot {}-dimensional wave function'.format(self.wf.grid.dimensions()))

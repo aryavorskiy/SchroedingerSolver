@@ -21,12 +21,13 @@ def add_first_dif_operator_mat(mat, grid, dim, multiplier=1):
     """
     d = grid.grid_step(dim)
     for pt in grid:
-        if pt[dim] == grid.sizes[dim] - 1:
+        if pt[dim] == grid.sizes[dim] - 1 or pt[dim] == 0:
             continue
         pt_idx = grid.index(pt)
+        pt_idx_d = grid.index(shift_point(pt, dim, -1))
         pt_idx_u = grid.index(shift_point(pt, dim, 1))
-        mat[pt_idx, pt_idx] -= 1 / d * multiplier
-        mat[pt_idx, pt_idx_u] += 1 / d * multiplier
+        mat[pt_idx, pt_idx_d] -= 0.5 / d * multiplier
+        mat[pt_idx, pt_idx_u] += 0.5 / d * multiplier
     return mat
 
 
@@ -136,6 +137,19 @@ class LinearOperator:
         self.mat = (other * self).mat
 
 
+class ScalarLinearOperator(LinearOperator):
+    """
+    Represents an operator that multiplies on a function
+    """
+
+    def __init__(self, grid: Grid, function_callback):
+        operator_mat = np.zeros((len(grid),) * 2)
+        for pt in grid:
+            i = grid.index(pt)
+            operator_mat[i, i] += function_callback(grid.point_to_absolute(pt))
+        super().__init__(grid, operator_mat)
+
+
 class ParticleHamiltonian(LinearOperator):
     """
     Implementation of a hamiltonian of a single particle.
@@ -144,9 +158,7 @@ class ParticleHamiltonian(LinearOperator):
     def __init__(self, grid: Grid, m, *args):
         self.m = m
         operator_mat = - H ** 2 / (self.m * 2) * get_laplace_operator_mat(grid)
-        for pt in grid:
-            i = grid.index(pt)
-            operator_mat[i, i] += self.get_potential(grid.point_to_absolute(pt))
+        operator_mat += ScalarLinearOperator(grid, lambda x: self.get_potential(x)).mat
         super(ParticleHamiltonian, self).__init__(grid, operator_mat)
 
     @abstractmethod

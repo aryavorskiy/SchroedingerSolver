@@ -1,6 +1,6 @@
 import numpy as np
 
-from LinearAlgebraModel.Model.BaseOperators import LinearOperator, get_first_dif_operator_mat, H
+from LinearAlgebraModel.Model.BaseOperators import LinearOperator, ScalarLinearOperator, get_first_dif_operator_mat, H
 from LinearAlgebraModel.Model.Grid import Grid
 
 
@@ -17,10 +17,16 @@ class TorqueOperator(LinearOperator):
         super(TorqueOperator, self).__init__(grid, -H * 1j * (np.dot(x_mat, dy_mat) - np.dot(y_mat, dx_mat)))
 
 
-class AngularLaplaceOperator(LinearOperator):
+class TorqueSquaredOperator(LinearOperator):
     def __init__(self, grid: Grid):
         if grid.dimensions() != 3:
             raise ValueError('Grid must be three-dimensional')
         components = [TorqueOperator(grid, axis) for axis in range(3)]
         mat = sum((c * c).mat for c in components)
         super().__init__(grid, mat)
+
+
+class AngularLaplaceOperator(LinearOperator):
+    def __init__(self, grid: Grid):
+        mat = - TorqueSquaredOperator(grid).mat * ScalarLinearOperator(grid, lambda x: 1 / sum(a ** 2 for a in x)).mat
+        super(AngularLaplaceOperator, self).__init__(grid, mat)

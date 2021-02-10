@@ -73,6 +73,21 @@ class Grid:
             raise ValueError('Point dimension does not match grid dimension')
         return [self.bounds[dim][0] + self.grid_step(dim) * point[dim] for dim in range(len(self.sizes))]
 
+    def point_from_absolute(self, point):
+        if len(point) != len(self.sizes):
+            raise ValueError('Point dimension does not match grid dimension')
+        return [int((point[dim] - self.bounds[dim][0]) / (self.bounds[dim][1] - self.bounds[dim][0]) * self.sizes[dim])
+                for dim in range(len(self.sizes))]
+
+    def points_inside(self):
+        for i in range(len(self)):
+            pt = self[i]
+            for dim in range(self.dimensions()):
+                if pt[dim] == 0 or pt[dim] == self.sizes[dim] - 1:
+                    break
+            else:
+                yield pt
+
     def __getitem__(self, item):
         """
         Obtain grid point by specified index
