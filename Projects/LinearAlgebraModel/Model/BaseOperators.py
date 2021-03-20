@@ -2,12 +2,12 @@ from abc import abstractmethod
 
 import numpy as np
 
-from LinearAlgebraModel.Model.Grid import Grid, shift_point
+from General.Grid import Grid
 
 H = 1
 
 
-def add_first_dif_operator_mat(mat, grid, dim, multiplier=1):
+def add_first_dif_operator_mat(mat, grid: Grid, axis, loop=False, multiplier=1):
     """
     Generates a matrix for the first derivative operator in given grid for given axis,
     multiplies it by the multiplier given and adds it to given matrix.
@@ -16,35 +16,35 @@ def add_first_dif_operator_mat(mat, grid, dim, multiplier=1):
 
     :param mat: Initial matrix
     :param grid: Grid object
-    :param dim: Axis index
+    :param axis: Axis index
+    :param loop: True if coordinate is looped (like phi in polar coordinates)
     :param multiplier: Multiplier
     """
-    d = grid.grid_step(dim)
-    for pt in grid:
-        if pt[dim] == grid.sizes[dim] - 1 or pt[dim] == 0:
-            continue
+    d = grid.grid_step(axis)
+    for pt in (grid if loop else grid.points_inside()):
         pt_idx = grid.index(pt)
-        pt_idx_d = grid.index(shift_point(pt, dim, -1))
-        pt_idx_u = grid.index(shift_point(pt, dim, 1))
+        pt_idx_d = grid.index(grid.shift_point(pt, axis, -1))
+        pt_idx_u = grid.index(grid.shift_point(pt, axis, 1))
         mat[pt_idx, pt_idx_d] -= 0.5 / d * multiplier
         mat[pt_idx, pt_idx_u] += 0.5 / d * multiplier
     return mat
 
 
-def get_first_dif_operator_mat(grid, dim):
+def get_first_dif_operator_mat(grid, axis, loop=False):
     """
     Generates a matrix for the second derivative operator in given grid for given axis.
 
     :param grid: Grid object
-    :param dim: Axis index
+    :param axis: Axis index
+    :param loop: True if coordinate is looped (like phi in polar coordinates)
     :return: Second derivative operator matrix
     """
     mat = np.zeros((len(grid),) * 2)
-    add_first_dif_operator_mat(mat, grid, dim)
+    add_first_dif_operator_mat(mat, grid, axis, loop=loop)
     return mat
 
 
-def add_second_dif_operator_mat(mat, grid, dim, multiplier=1):
+def add_second_dif_operator_mat(mat, grid, axis, loop=False, multiplier=1):
     """
     Generates a matrix for the second derivative operator in given grid for given axis,
     multiplies it by the multiplier given and adds it to given matrix.
@@ -53,34 +53,41 @@ def add_second_dif_operator_mat(mat, grid, dim, multiplier=1):
 
     :param mat: Initial matrix
     :param grid: Grid object
-    :param dim: Axis index
+    :param axis: Axis index
+    :param loop: True if coordinate is looped (like phi in polar coordinates)
     :param multiplier: Multiplier
     """
-    d = grid.grid_step(dim)
-    for pt in grid:
-        if pt[dim] == 0 or pt[dim] == grid.sizes[dim] - 1:
-            continue
+    d = grid.grid_step(axis)
+    for pt in (grid if loop else grid.points_inside()):
         pt_idx = grid.index(pt)
-        pt_idx_u = grid.index(shift_point(pt, dim, 1))
-        pt_idx_d = grid.index(shift_point(pt, dim, -1))
+        pt_idx_u = grid.index(grid.shift_point(pt, axis, 1))
+        pt_idx_d = grid.index(grid.shift_point(pt, axis, -1))
         mat[pt_idx, pt_idx] -= 2 / d ** 2 * multiplier
         mat[pt_idx, pt_idx_d] += 1 / d ** 2 * multiplier
         mat[pt_idx, pt_idx_u] += 1 / d ** 2 * multiplier
     return mat
 
 
-def get_second_dif_operator_mat(grid, dim):
+def get_second_dif_operator_mat(grid, axis, loop=False):
     """
     Generates a matrix for the second derivative operator in given grid for given axis.
 
     :param grid: Grid object
-    :param dim: Axis index
+    :param axis: Axis index
+    :param loop: True if coordinate is looped (like phi in polar coordinates)
     :return: Second derivative operator matrix
     """
     mat = np.zeros((len(grid),) * 2)
-    add_second_dif_operator_mat(mat, grid, dim)
+    add_second_dif_operator_mat(mat, grid, axis, loop=loop)
     return mat
 
+
+def get_scalar_mat(grid, function_callback):
+    mat = np.zeros((len(grid),) * 2)
+    for pt in grid:
+        i = grid.index(pt)
+        mat[i, i] += function_callback(grid.point_to_absolute(pt))
+    return mat
 
 def get_laplace_operator_mat(grid):
     """
@@ -93,6 +100,13 @@ def get_laplace_operator_mat(grid):
     for dim in range(grid.dimensions()):
         add_second_dif_operator_mat(mat, grid, dim)
     return mat
+
+
+def get_laplace_operator_sph_grid(grid):
+    mat = np.zeros((len(grid),) * 2)
+    if grid.dimensions() != 3:
+        raise ValueError("Grid must be three-dimensional")
+    # R, phi, theta
 
 
 class LinearOperator:
@@ -143,11 +157,7 @@ class ScalarLinearOperator(LinearOperator):
     """
 
     def __init__(self, grid: Grid, function_callback):
-        operator_mat = np.zeros((len(grid),) * 2)
-        for pt in grid:
-            i = grid.index(pt)
-            operator_mat[i, i] += function_callback(grid.point_to_absolute(pt))
-        super().__init__(grid, operator_mat)
+        super().__init__(grid, get_scalar_mat(grid, function_callback))
 
 
 class ParticleHamiltonian(LinearOperator):

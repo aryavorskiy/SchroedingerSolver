@@ -1,7 +1,8 @@
 import numpy as np
 
-from LinearAlgebraModel.Model.BaseOperators import LinearOperator, ScalarLinearOperator, get_first_dif_operator_mat, H
-from LinearAlgebraModel.Model.Grid import Grid
+from General.Grid import Grid
+from Projects.LinearAlgebraModel.Model.BaseOperators import LinearOperator, ScalarLinearOperator, \
+    get_first_dif_operator_mat, H
 
 
 class TorqueOperator(LinearOperator):

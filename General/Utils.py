@@ -7,30 +7,31 @@ class ProgressInformer:
     Object that enables showing the progress of some operation in the console.
     """
 
-    def __init__(self, caption='', length=20):
+    def __init__(self, caption='', length=20, maximum=1):
         """
         Creates a new ProgressInformer instance.
 
         :param caption: Text to the left of the progressbar
         :param length: Length of the progressbar in characters
         """
-        self.progress = 0
-        self.start_time = int(time.time())
-        self.time_elapsed = 0
+        self.snapshots = [(int(time.time()), 0.)]
         self.length = length
         self.caption = caption
+        self.max = maximum
 
-    def report_progress(self, progress: float):
+    def report_progress(self, progress):
         """
         Updates progress data stored in the object.
         The progressbar is updated 5 times a second.
         """
-        current_elapsed = int(time.time()) - self.start_time
-        if current_elapsed - self.time_elapsed > 0.2:
+        progress /= self.max
+        current_dt = int(time.time()) - self.snapshots[-1][0]
+        if current_dt > 0.2 and progress > self.snapshots[-1][1]:
+            self.snapshots.append((int(time.time()), progress))
             current_pct = int(100 * progress)
             bar_count = int(current_pct * self.length / 100)
-            d_seconds = current_elapsed - self.time_elapsed
-            d_progress = progress - self.progress
+            d_seconds = self.snapshots[-1][0] - self.snapshots[0][0]
+            d_progress = self.snapshots[-1][1] - self.snapshots[0][1]
             estimated_left = (1 - progress) * d_seconds / d_progress
             print('\r{} [{}] {}% ETA: {}'.format(
                 self.caption,
@@ -38,8 +39,10 @@ class ProgressInformer:
                 current_pct,
                 str(datetime.timedelta(seconds=int(estimated_left)))),
                 end='')
-            self.time_elapsed = current_elapsed
-            self.progress = progress
+            self.snapshots = self.snapshots[-5:]
+
+    def report_increment(self):
+        self.report_progress(self.snapshots[-1][1] * self.max + 1)
 
     def finish(self):
         """

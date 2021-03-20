@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from math import isnan
 
-from CauchyTaskModel.CauchyProblem import CauchyProblem
-from Utils import ProgressInformer
+from General.Utils import ProgressInformer
+from Projects.CauchyTaskModel.CauchyProblem import CauchyProblem
 
 
 class Solver(ABC):
@@ -26,10 +26,9 @@ class Solver(ABC):
         t_arr = [t]
         dvars = {name: [dependent_vars[name]] for name in dependent_vars}
 
-        counter = 0
         max_progress = int(abs(target - t) / abs(step))
         if verbose:
-            informer = ProgressInformer()
+            informer = ProgressInformer(maximum=max_progress)
 
         while t * step <= target * step:
             step_result = self.perform_step(step)
@@ -39,9 +38,8 @@ class Solver(ABC):
                     raise ValueError('Reached NotANumber')
             t_arr.append(t)
             t += step
-            counter += 1
             if verbose:
-                informer.report_progress(counter / max_progress)
+                informer.report_increment()
             self.problem.set_state(t, step_result)
         self.problem.set_state(initial_t, dependent_vars)
         if verbose:

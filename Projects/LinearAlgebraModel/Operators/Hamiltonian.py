@@ -1,5 +1,5 @@
-from LinearAlgebraModel.Model.BaseOperators import ParticleHamiltonian
-from LinearAlgebraModel.Model.Grid import Grid
+from General.Grid import Grid
+from Projects.LinearAlgebraModel.Model.BaseOperators import ParticleHamiltonian
 
 K = 1
 Epsilon = 1

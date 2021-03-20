@@ -1,7 +1,7 @@
 import csv
 
-from LinearAlgebraModel.Model.Equation import naive_operator_value_error
-from Utils import ProgressInformer
+from General.Utils import ProgressInformer
+from Projects.LinearAlgebraModel.Model.Equation import naive_operator_value_error
 
 
 class SpectrumEntry:

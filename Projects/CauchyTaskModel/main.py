@@ -1,7 +1,5 @@
-from CauchyTaskModel.CauchyProblem import DependentVariable, CauchyProblem
-from CauchyTaskModel.Solver import RungeKuttaSolver
-
-from Visual import show_dependents
+from Projects.CauchyTaskModel.CauchyProblem import DependentVariable, CauchyProblem
+from Projects.CauchyTaskModel.Solver import RungeKuttaSolver
 
 r = 10
 h = 1e-34
@@ -24,5 +22,5 @@ p.set_state(1000, {'psi': 1e-100, 'psi\'': -1e-100})
 
 t, dvars = s.evolve(1e-3, 1e-3, True)
 dvars.pop('psi\'')
-show_dependents(t, dvars)
-show_dependents(t, dvars, (0, 10))
+# show_dependents(t, dvars)
+# show_dependents(t, dvars, (0, 10))

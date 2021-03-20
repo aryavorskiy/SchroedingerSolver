@@ -1,9 +1,3 @@
-def shift_point(point, dim, offset):
-    if not 0 <= dim < len(point):
-        raise IndexError('Point has no dimension {}'.format(dim))
-    return tuple(point[i] + offset if i == dim else point[i] for i in range(len(point)))
-
-
 class Grid:
     """
     Represents a multi-dimensional grid in space.
@@ -27,15 +21,15 @@ class Grid:
         self.bounds = bounds
         self.sizes = sizes
 
-    def grid_step(self, dimension):
+    def grid_step(self, axis):
         """
         Obtain grid step on specified axis
 
-        :param dimension: Index of the axis specified
+        :param axis: Index of the axis specified
         :return: Step
         """
-        if self.sizes[dimension] != 1:
-            return (self.bounds[dimension][1] - self.bounds[dimension][0]) / (self.sizes[dimension] - 1)
+        if self.sizes[axis] != 1:
+            return (self.bounds[axis][1] - self.bounds[axis][0]) / (self.sizes[axis] - 1)
 
     def mesh(self, initial_obj=None):
         """
@@ -78,6 +72,13 @@ class Grid:
             raise ValueError('Point dimension does not match grid dimension')
         return [int((point[dim] - self.bounds[dim][0]) / (self.bounds[dim][1] - self.bounds[dim][0]) * self.sizes[dim])
                 for dim in range(len(self.sizes))]
+
+    def shift_point(self, point, axis, offset):
+        if not 0 <= axis < len(point):
+            raise IndexError('Point has no axis #{}'.format(axis))
+        if len(point) != len(self.sizes):
+            raise ValueError('Point dimension does not match grid dimension')
+        return tuple((point[i] + offset if i == axis else point[i]) % self.sizes[i] for i in range(len(self)))
 
     def points_inside(self):
         for i in range(len(self)):

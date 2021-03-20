@@ -1,9 +1,9 @@
 #!/usr/bin/python
-from LinearAlgebraModel.Model.Equation import SchrodingerSolution, WaveFunction
-from LinearAlgebraModel.Model.Spectrum import Spectrum
-from LinearAlgebraModel.Operators.Hamiltonian import *
-from LinearAlgebraModel.Operators.Measurement import AngularLaplaceOperator, TorqueOperator
-from LinearAlgebraModel.Visual import WaveFunctionVisualizer
+from Projects.LinearAlgebraModel.Model.Equation import SchrodingerSolution, WaveFunction
+from Projects.LinearAlgebraModel.Model.Spectrum import Spectrum
+from Projects.LinearAlgebraModel.Operators.Hamiltonian import *
+from Projects.LinearAlgebraModel.Operators.Measurement import AngularLaplaceOperator, TorqueOperator
+from Projects.LinearAlgebraModel.Visual import WaveFunctionVisualizer
 
 
 def square_grid(r, q, dim=1, center: tuple = None):
@@ -24,9 +24,9 @@ if __name__ == '__main__':
 
     def plot_solution(wf: WaveFunction, data_format='pr', color_phase=False):
         plotter = WaveFunctionVisualizer(wf)
-        plotter.set_value_data(data_format)
+        plotter.add_data(data_format)
         if color_phase:
-            plotter.set_color_data('phs')
+            plotter.add_data('phs')
         plotter.plot(title=str(wf.operator_value_error(hamiltonian)[0]), x_label='X')
 
 

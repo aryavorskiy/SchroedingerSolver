@@ -2,9 +2,9 @@ import csv
 
 import numpy as np
 
-from LinearAlgebraModel.Model.BaseOperators import LinearOperator
-from LinearAlgebraModel.Model.Grid import Grid
-from Utils import ProgressInformer
+from General.Grid import Grid
+from General.Utils import ProgressInformer
+from Projects.LinearAlgebraModel.Model.BaseOperators import LinearOperator
 
 
 class WaveFunction:
