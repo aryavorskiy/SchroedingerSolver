@@ -57,7 +57,7 @@ class Spectrum:
             else:
                 raise KeyError('No operators passed, cannot create empty spectrum object')
 
-            progressbar = ProgressInformer('Evaluating spectrum', length=40)
+            p = ProgressInformer(caption='Evaluating spectrum', length=40)
             counter = 0
             self.entries = []
             for wf in sol.states:
@@ -73,8 +73,8 @@ class Spectrum:
                 else:
                     self.entries.append(SpectrumEntry(1, **kw))
                 counter += 1
-                progressbar.report_progress(counter / len(sol.states))
-            progressbar.finish()
+                p.report_progress(counter / len(sol.states))
+            p.finish()
         elif 'filename' in kwargs:
             with open(kwargs['filename']) as spectrum_reader:
                 reader = csv.reader(spectrum_reader)

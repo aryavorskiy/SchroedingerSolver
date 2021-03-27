@@ -6,14 +6,9 @@ import numpy as np
 
 from General.Grid import Grid
 from General.Visual import ParametricVisualizer
+from Projects.ChernInsulator.consts import pauli_mats, sz
 
 pl.ioff()
-
-# Pauli matrices
-sx = np.array([[0, 1], [1, 0]])
-sy = np.array([[0, -1j], [1j, 0]])
-sz = np.array([[1, 0], [0, -1]])
-pauli_mats = [sx, sy, sz]
 
 
 def get_energy(k, m):

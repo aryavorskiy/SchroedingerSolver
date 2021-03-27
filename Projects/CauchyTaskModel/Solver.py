@@ -28,7 +28,7 @@ class Solver(ABC):
 
         max_progress = int(abs(target - t) / abs(step))
         if verbose:
-            informer = ProgressInformer(maximum=max_progress)
+            p = ProgressInformer(max=max_progress)
 
         while t * step <= target * step:
             step_result = self.perform_step(step)
@@ -39,11 +39,11 @@ class Solver(ABC):
             t_arr.append(t)
             t += step
             if verbose:
-                informer.report_increment()
+                p.report_increment()
             self.problem.set_state(t, step_result)
         self.problem.set_state(initial_t, dependent_vars)
         if verbose:
-            informer.finish()
+            p.finish()
         return t_arr, dvars
 
     def evolve_iterative(self, target_t, point_tolerance):

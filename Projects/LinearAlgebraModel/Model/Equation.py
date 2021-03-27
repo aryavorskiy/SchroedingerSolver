@@ -91,14 +91,14 @@ class SchrodingerSolution:
 
             self.values = np.real_if_close(eig[0], tol=1E7)
             self.grid = grid
-            progressbar = ProgressInformer('Evaluating wave functions', length=40)
+            p = ProgressInformer(caption='Evaluating wave functions', length=40)
             i = 0
             self.states = []
             for line in eig[1].transpose():
                 self.states.append(WaveFunction(self.grid, line))
                 i += 1
-                progressbar.report_progress(i / len(eig[1]))
-            progressbar.finish()
+                p.report_progress(i / len(eig[1]))
+            p.finish()
             self.alias = '{}_{}'.format(
                 type(ham).__name__,
                 '_'.join('({},{},{})'.format(*b, s) for b, s in zip(grid.bounds, grid.sizes))
@@ -124,11 +124,11 @@ class SchrodingerSolution:
         writer.writerow([b[1] for b in self.grid.bounds])
         writer.writerow(self.grid.sizes)
         writer.writerow(self.values)
-        progressbar = ProgressInformer('Dumping wave functions', length=40)
+        p = ProgressInformer(caption='Dumping wave functions', length=40)
         for i in range(len(self.states)):
             writer.writerow(self.states[i].values)
-            progressbar.report_progress((i + 1) / len(self.states))
-        progressbar.finish()
+            p.report_progress((i + 1) / len(self.states))
+        p.finish()
 
     def load(self, filename: str):
         """
@@ -146,12 +146,12 @@ class SchrodingerSolution:
         self.grid = Grid(list(zip(l_bounds, u_bounds)), sizes)
         self.values = np.array([complex(a) for a in reader.__next__()])
         self.states = []
-        progressbar = ProgressInformer('Loading wave functions', length=40)
-        progressbar.report_progress(0)
+        p = ProgressInformer(caption='Loading wave functions', length=40)
+        p.report_progress(0)
         for i in range(len(self.values)):
             self.states.append(WaveFunction(self.grid, reader.__next__()))
-            progressbar.report_progress((i + 1) / len(self.values))
-        progressbar.finish()
+            p.report_progress((i + 1) / len(self.values))
+        p.finish()
 
     def __getitem__(self, args):
         """

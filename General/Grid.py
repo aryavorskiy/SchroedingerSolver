@@ -71,14 +71,14 @@ class Grid:
         if len(point) != len(self.sizes):
             raise ValueError('Point dimension does not match grid dimension')
         return [int((point[dim] - self.bounds[dim][0]) / (self.bounds[dim][1] - self.bounds[dim][0]) * self.sizes[dim])
-                for dim in range(len(self.sizes))]
+                for dim in range(self.dimensions())]
 
     def shift_point(self, point, axis, offset):
         if not 0 <= axis < len(point):
             raise IndexError('Point has no axis #{}'.format(axis))
         if len(point) != len(self.sizes):
             raise ValueError('Point dimension does not match grid dimension')
-        return tuple((point[i] + offset if i == axis else point[i]) % self.sizes[i] for i in range(len(self)))
+        return tuple((point[i] + offset if i == axis else point[i]) % self.sizes[i] for i in range(self.dimensions()))
 
     def points_inside(self):
         for i in range(len(self)):
