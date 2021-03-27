@@ -10,8 +10,9 @@ class Visualizer:
     def __init__(self, coords, datas):
         self.coords = coords
         self.datas = datas
+        self.has_legend = False
 
-    def plot(self, title='', x_label='', y_label='', filename=None, **kwargs):
+    def plot(self, **kwargs):
         """
         Plot loaded data
 
@@ -30,30 +31,31 @@ class Visualizer:
             if len(self.datas) != 2:
                 raise ValueError('Invalid quiver data')
             ax = fig.gca()
-            ax.set_title(title)
-            ax.set_xlabel(x_label)
+            ax.set_title(kwargs.get('title', ''))
+            ax.set_xlabel(kwargs.get('x_label', ''))
             ax.quiver(*self.coords, *[a[0] for a in self.datas])
         else:
             if len(self.coords) == 1:
                 ax = fig.gca()
-                ax.set_title(title)
-                ax.set_xlabel(x_label)
+                ax.set_title(kwargs.get('title', ''))
+                ax.set_xlabel(kwargs.get('x_label', ''))
                 for data, label in self.datas:
                     ax.plot(*self.coords, data, label=label)
+                if self.has_legend:
+                    ax.legend()
             elif len(self.coords) == 2:
                 ax = fig.gca(projection='3d')
-                ax.set_xlabel(x_label)
-                ax.set_ylabel(y_label)
-                ax.set_title(title)
+                ax.set_xlabel(kwargs.get('x_label', ''))
+                ax.set_ylabel(kwargs.get('y_label', ''))
+                ax.set_title(kwargs.get('title', ''))
                 for data, label in self.datas:
                     ax.plot_surface(*self.coords, data, cmap='viridis')
             else:
                 raise ValueError('Cannot plot {}-dimensional data'.format(len(self.coords)))
-        ax.legend()
-        if not filename:
+        if 'filename' not in kwargs:
             pl.show()
         else:
-            pl.savefig(filename)
+            pl.savefig(kwargs['filename'])
             pl.gca()
             pl.close(fig)
 
@@ -71,13 +73,15 @@ class FunctionVisualizer(Visualizer):
                 coords[i][point] = self.grid.point_to_absolute(point)[i]
         super().__init__(coords, [])
 
-    def add_fn(self, fn, label=""):
+    def add_fn(self, fn, label="", verbose=True):
         data = np.array(self.grid.mesh())
-        p = ProgressInformer(caption=f'Populating graph for function {label}', max=len(self.grid))
+        p = ProgressInformer(caption=f'Populating graph for function {label}', max=len(self.grid), verbose=verbose)
         for point in self.grid:
             data[point] = fn(self.grid.point_to_absolute(point))
             p.report_increment()
         p.finish()
+        if label != "":
+            self.has_legend = True
         self.datas.append((data, label))
 
     def cleanup(self):
@@ -93,34 +97,35 @@ class ParametricVisualizer(FunctionVisualizer):
     def add_parameter(self, value):
         self.params.append(value)
         for fn in self.fns:
-            self.add_fn(lambda data: fn(data, value), f'{fn}: M = {value}')
+            self.add_fn(lambda data: fn(data, value), f'{fn}: M = {value}', verbose=False)
 
     def cleanup(self):
         super(ParametricVisualizer, self).cleanup()
         self.params.clear()
 
-    def plot(self, title=None, x_label='', y_label='', filename=None, **kwargs):
-        if title is None:
+    def plot(self, **kwargs):
+        if 'title' not in kwargs is None:
             if len(self.params) == 1:
-                title = f'M = {round(float(self.params[0]), 2):0<{5}}'
+                kwargs['title'] = f'M = {self.params[0]:.2f}'
             else:
-                title = f'M in {self.params}'
-        super().plot(title, x_label, y_label, filename, **kwargs)
+                kwargs['title'] = f'M in {self.params}'
+        super().plot(**kwargs)
 
-    def plot_value(self, value, filename=None):
+    def plot_value(self, value, **kwargs):
         self.cleanup()
         self.add_parameter(value)
-        self.plot(filename=filename)
+        self.plot(**kwargs)
 
-    def animate(self, parameter_values, time, filename, dir_name):
+    def animate(self, parameter_values, time, filename, dir_name, draw_args):
         p = ProgressInformer(caption='Rendering frames...', max=len(parameter_values))
         frame_i = 0
         for M in parameter_values:
             frame_i += 1
-            self.plot_value(M, filename=f'{dir_name}/frame_{frame_i:0>{len(parameter_values)}}.png')
+            self.plot_value(M, filename=f'{dir_name}/frame_{frame_i:0>{len(str(len(parameter_values)))}}.png',
+                            **draw_args)
             p.report_increment()
         p.finish()
 
-        print('Animating GIF...')
-        os.system(f'convert -delay {int(100 * time / len(parameter_values))} {dir_name}/frame_*.png {filename}')
+        print('Animating...')
+        os.system(f'ffmpeg -framerate {len(parameter_values) / time:.2f} -i {dir_name}/frame_%03.png {filename}')
         print('Done')

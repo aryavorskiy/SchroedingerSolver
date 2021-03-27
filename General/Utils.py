@@ -14,6 +14,9 @@ class ProgressInformer:
         :param caption: Text to the left of the progressbar
         :param length: Length of the progressbar in characters
         """
+        if 'verbose' in kwargs and kwargs['verbose'] == False:
+            self.snapshots = None
+            return
         self.snapshots = [[int(time.time()), 0.]]
         self.length = kwargs.get('length', 20)
         self.caption = kwargs.get('caption', '')
@@ -24,6 +27,8 @@ class ProgressInformer:
         Updates progress data stored in the object.
         The progressbar is updated 5 times a second.
         """
+        if self.snapshots is None:
+            return
         progress /= self.max
         current_dt = int(time.time()) - self.snapshots[-1][0]
         if current_dt > 0.2 and progress > self.snapshots[-1][1]:
@@ -44,10 +49,13 @@ class ProgressInformer:
             self.snapshots[-1][1] = progress
 
     def report_increment(self):
+        if self.snapshots is None:
+            return
         self.report_progress(self.snapshots[-1][1] * self.max + 1)
 
     def finish(self):
         """
         Prints a full progress bar and goes to next line
         """
-        print('\r{} [{}] 100% ETA: 0:00:00'.format(self.caption, '#' * self.length))
+        if self.snapshots is not None:
+            print('\r{} [{}] 100% ETA: 0:00:00'.format(self.caption, '#' * self.length))
